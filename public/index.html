@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Chat test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+    <form id="chat">
+        <input type="text" name="username" placeholder="username" id="">
+        <div class="messages"></div>
+        <input type="text" name="message" placeholder="mensagem">
+        <button type="submit"> Enviar </button>
+    </form>
+    
+
+    <script type="text/javascript">
+        var socket = io('http://localhost:3000');
+
+        function renderMessage(mensagem){
+            $('.messages').append('<div class="message"><strong>'+ mensagem.author +'</strong>:'+ mensagem.message  + '</div>');
+        }
+
+        //  escutando o previusMessage, e quando ouvido, pego as mensagens e jgoo na div messages através da function renderMessage
+        socket.on('previusMessage', function(previusMessage){
+            for(message of previusMessage){
+                renderMessage(message);
+            }
+        });
+
+        // escutando o receivedMessage para quando for inserido uma nova mensagem
+        socket.on('receivedMessage' , function(message){
+            renderMessage(message);
+        });
+
+        $('#chat').submit(function(event){
+            event.preventDefault();
+
+            var author = $("input[name=username]").val();
+            var message = $("input[name=message]").val();
+
+            var objMensagem = {
+                author: author,
+                message: message,
+            };
+
+            renderMessage(objMensagem);
+            // chamo o sendMessage a cada mensagem enviada, assim o socket ouve esse evento e cadastra a mensagem
+            socket.emit('sendMessage', objMensagem);
+        });
+    </script>
+</body>
+</html>
